@@ -1,0 +1,101 @@
+{
+  "info": {
+    "name": "Microservicio Notificaciones — Asilo Cabeza de Algodón",
+    "_postman_id": "asilo-nueva-vida-notificaciones",
+    "description": "Colección para probar el microservicio de notificaciones por correo. Importar en Postman y ejecutar las peticiones.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:5050" },
+    { "key": "api_key",  "value": "asilo-nueva-vida-2025-notificaciones-key" }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check (sin auth)",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/api/health",
+        "description": "Verifica que el microservicio esté activo. No requiere API Key."
+      }
+    },
+    {
+      "name": "2. Notificar Solicitud de Referencia (RF-10)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/notificaciones/solicitud",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Api-Key",    "value": "{{api_key}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idSolicitud\": 34,\n  \"nombreFamiliar\": \"María Elena Ajú\",\n  \"correoFamiliar\": \"m.aju@gmail.com\",\n  \"nombreInterno\": \"Carlos Enrique Ajú Pérez\",\n  \"especialidadRequerida\": \"Neurología\",\n  \"motivoReferencia\": \"Deterioro cognitivo progresivo, evaluación neurológica urgente.\",\n  \"nombreMedicoGeneral\": \"Dr. Roberto Samayoa\",\n  \"nombreMedicoEspecialista\": \"Dra. Ana Leticia Ruiz\",\n  \"nombreEnfermero\": \"Licda. Carmen López\",\n  \"fechaCita\": \"2025-04-12T10:00:00\",\n  \"estadoSolicitud\": \"asignada\"\n}"
+        },
+        "description": "Envía notificación al familiar cuando se crea una solicitud de referencia médica. Este es el endpoint principal relacionado con el RF-10 del proyecto."
+      }
+    },
+    {
+      "name": "3. Notificar Solicitud (sin cita asignada aún)",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/notificaciones/solicitud",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Api-Key",    "value": "{{api_key}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"idSolicitud\": 35,\n  \"nombreFamiliar\": \"Pedro González\",\n  \"correoFamiliar\": \"p.gonzalez@gmail.com\",\n  \"nombreInterno\": \"Rosa González Paz\",\n  \"especialidadRequerida\": \"Cardiología\",\n  \"motivoReferencia\": \"Palpitaciones irregulares y fatiga severa.\",\n  \"nombreMedicoGeneral\": \"Dr. Roberto Samayoa\",\n  \"nombreMedicoEspecialista\": null,\n  \"nombreEnfermero\": null,\n  \"fechaCita\": null,\n  \"estadoSolicitud\": \"pendiente\"\n}"
+        },
+        "description": "Misma solicitud pero con estado pendiente, sin médico especialista ni fecha asignada aún."
+      }
+    },
+    {
+      "name": "4. Recordatorio de Cita",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/notificaciones/recordatorio-cita",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Api-Key",    "value": "{{api_key}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreFamiliar\": \"María Elena Ajú\",\n  \"correoFamiliar\": \"m.aju@gmail.com\",\n  \"nombreInterno\": \"Carlos Enrique Ajú Pérez\",\n  \"nombreMedico\": \"Dra. Ana Leticia Ruiz\",\n  \"especialidad\": \"Neurología\",\n  \"fechaCita\": \"2025-04-12T10:00:00\",\n  \"lugarAtencion\": \"Clínica de la Fundación — Zona 10, Guatemala\"\n}"
+        },
+        "description": "Envía recordatorio de cita 24 horas antes."
+      }
+    },
+    {
+      "name": "5. Correo Genérico",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/notificaciones/generico",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Api-Key",    "value": "{{api_key}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"destinatarioNombre\": \"María Elena Ajú\",\n  \"destinatarioCorreo\": \"m.aju@gmail.com\",\n  \"asunto\": \"Actualización estado del paciente\",\n  \"mensajeHtml\": \"<h2>Estimada familia</h2><p>Su familiar ha regresado al asilo exitosamente.</p>\",\n  \"mensajeTexto\": \"Su familiar ha regresado al asilo exitosamente.\"\n}"
+        },
+        "description": "Correo personalizado para casos especiales."
+      }
+    },
+    {
+      "name": "6. Error — Sin API Key",
+      "request": {
+        "method": "POST",
+        "url": "{{base_url}}/api/notificaciones/solicitud",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreFamiliar\": \"Test\",\n  \"correoFamiliar\": \"test@test.com\",\n  \"nombreInterno\": \"Paciente Test\",\n  \"especialidadRequerida\": \"General\",\n  \"motivoReferencia\": \"Test\",\n  \"nombreMedicoGeneral\": \"Dr. Test\",\n  \"idSolicitud\": 1,\n  \"estadoSolicitud\": \"pendiente\"\n}"
+        },
+        "description": "Prueba de acceso sin API Key — debe retornar 401 Unauthorized."
+      }
+    }
+  ]
+}

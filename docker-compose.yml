@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+
+  # ─── Microservicio de Notificaciones ────────────────────────────────────────
+  notificaciones-service:
+    build:
+      context: ./NotificacionesService
+      dockerfile: Dockerfile
+    container_name: asilo-notificaciones
+    ports:
+      - "5050:5050"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5050
+      # Sobreescribir configuración de correo con variables de entorno
+      # (más seguro que tenerlas en appsettings.json)
+      - ConfiguracionCorreo__ServidorSmtp=smtp.gmail.com
+      - ConfiguracionCorreo__Puerto=587
+      - ConfiguracionCorreo__ModoDebug=true
+      # En producción cambiar ModoDebug a false y agregar credenciales reales:
+      # - ConfiguracionCorreo__Usuario=tu_correo@gmail.com
+      # - ConfiguracionCorreo__Contrasena=tu_contrasena_app
+    volumes:
+      # Montar directorio de logs para poder verlos desde el host
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - asilo-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5050/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  asilo-network:
+    driver: bridge
